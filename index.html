@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+
+<body>
+  <input type="text" id="username">
+  <br>
+  <input type="text" name="" id="to">
+  <br>
+  <button onclick="userone()">user one</button>
+  <br>
+  <button onclick="logout()">Salir</button>
+  <br><br>
+  <ul id="log">
+    <li>Coffee</li>
+    <li>Tea</li>
+  </ul>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+  <script>
+
+    var user_token_id = "";
+
+    function randomString(length, chars) {
+      var result = '';
+      for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+      return result;
+    }
+    var rString = randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+
+    var socket = io();
+    socket.emit("user", { token: rString })
+    user_token_id = rString
+    console.log(rString)
+
+    function userone() {
+      var mensaje = document.getElementById("username").value
+      var to = document.getElementById("to").value
+      socket.emit("usert_one", { token_id: to, message: mensaje })
+    }
+
+
+
+    socket.on(user_token_id, function (msg) {
+      toaster(msg.message);
+    })
+
+    socket.on("users", function (msg) {
+      console.log(msg.users)
+
+
+
+      var jsonFormated = JSON.stringify(msg.users);
+
+
+      var node = document.createElement("LI");
+      var textnode = document.createTextNode(jsonFormated);
+      node.appendChild(textnode);
+      document.getElementById("log").appendChild(node);
+    })
+
+    function logout() {
+      if (confirm("salir?")) {
+        socket.emit("logout", { token: rString })
+        user_token_id = ""
+      }
+    }
+
+    function toaster(message) {
+      Toastify({
+        text: message,
+        duration: 3000000,
+        //destination: "https://github.com/apvarun/toastify-js",
+        newWindow: true,
+        close: true,
+        gravity: "top", // `top` or `bottom`
+        positionRight: true, // `true` or `false`
+        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+        stopOnFocus: true // Prevents dismissing of toast on hover
+      }).showToast();
+    }
+
+  </script>
+
+</body>
+
+</html>
